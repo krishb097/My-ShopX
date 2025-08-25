@@ -1,0 +1,609 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>LocalStorage Shop</title>
+  <style>
+    :root{
+      --bg:#0b1020; --panel:#111831; --muted:#778; --text:#eef1ff; --accent:#6aa6ff; --accent2:#9bffcf; --danger:#ff6a6a;
+    }
+    *{box-sizing:border-box}
+    body{margin:0;font-family:system-ui,-apple-system,Segoe UI,Roboto,Ubuntu,Inter,Arial;background:linear-gradient(180deg,#0b1020,#0d1326);color:var(--text)}
+    a{color:inherit}
+    .container{max-width:1100px;margin:0 auto;padding:24px}
+    header{position:sticky;top:0;background:rgba(11,16,32,.8);backdrop-filter:blur(6px);border-bottom:1px solid #1d2547;z-index:10}
+    header .bar{display:flex;align-items:center;gap:16px;padding:12px 0}
+    .brand{font-weight:800;letter-spacing:.5px}
+    .tag{padding:2px 8px;border-radius:999px;background:#1a2446;color:#c8d1ff;font-size:12px}
+    .spacer{flex:1}
+    button, .btn {
+  background: var(--accent);
+  color: #0a0f21;
+  border: none;
+  padding: 10px 14px;
+  border-radius: 12px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.25s ease; /* smooth hover */
+}
+
+button:hover, .btn:hover {
+  filter: brightness(1.15);
+  box-shadow: 0 4px 12px rgba(106, 166, 255, 0.816);
+  transform: translateY(-2px);
+}
+
+/* Secondary Button */
+button.secondary, .btn.secondary {
+  background: #1c254b;
+  color: #cfd6ff;
+  border: 1px solid #2a3570;
+  transition: all 0.25s ease;
+}
+button.secondary:hover, .btn.secondary:hover {
+  background: #253062;
+  box-shadow: 0 4px 12px rgba(106, 166, 255, 0.816);
+  transform: translateY(-2px);
+}
+
+/* Ghost Button */
+button.ghost {
+  background: transparent;
+  color: #cfd6ff;
+  border: 1px solid #384fa3;
+  transition: all 0.25s ease;
+}
+button.ghost:hover {
+  background: rgba(52, 66, 120, 0.2);
+  box-shadow: 0 4px 10px rgba(106, 166, 255, 0.816);
+  transform: translateY(-2px);
+}
+
+/* Danger Button */
+button.danger {
+  background: var(--danger);
+  color: #1b0a0a;
+  transition: all 0.25s ease;
+}
+button.danger:hover {
+  background: #ff4d4d;
+  box-shadow: 0 4px 12px rgb(255, 0, 0);
+  transform: translateY(-2px);
+}
+    input,select{width:100%;padding:10px 12px;border-radius:10px;border:1px solid #2a3570;background:#0f152e;color:var(--text)}
+    input[readonly]{opacity:.8}
+    .grid{display:grid;gap:16px}
+    .grid.cards{grid-template-columns:repeat(auto-fill,minmax(220px,1fr))}
+    .card{background:var(--panel);border:1px solid #1d2547;border-radius:16px;overflow:hidden;box-shadow:0 6px 24px rgba(0,0,0,.2)}
+    .card img{width:100%;height:150px;object-fit:cover;background:#0d142d}
+    .card .p{padding:12px}
+    .muted{color:#a3acd9}
+    .row{display:flex;gap:12px}
+    .row.wrap{flex-wrap:wrap}
+    .row.center{align-items:center}
+    .row.between{justify-content:space-between}
+    .pill{padding:4px 10px;border-radius:999px;background:#192248;color:#cfe0ff;font-size:12px}
+    .table{width:100%;border-collapse:collapse;font-size:14px}
+    .table th,.table td{border-bottom:1px solid #1d2547;padding:10px;text-align:left}
+    .table th{position:sticky;top:52px;background:#0e1530;z-index:1}
+    .section{display:none}
+    .section.active{display:block}
+    .panel{background:var(--panel);border:1px solid #1d2547;border-radius:16px;padding:16px}
+    .kbd{font-family:ui-monospace,Menlo,Consolas,monospace;background:#0a0f25;border:1px solid #1b244d;border-radius:8px;padding:2px 6px}
+    .notice{border-left:3px solid var(--accent);padding:10px 12px;background:#0f1734;border-radius:10px}
+    .footer{margin-top:36px;color:#97a2db}
+  </style>
+</head>
+<body>
+  <header>
+    <div class="container bar">
+      <div class="brand">🛍️ My ShopX</div>
+      <span class="tag" id="roleTag">Guest</span>
+      <div class="spacer"></div>
+      <button class="ghost" id="goShopBtn">Shop</button>
+      <button class="ghost" id="goAdminBtn">Admin</button>
+      <button class="secondary" id="loginBtn">Login</button>
+      <button class="secondary" id="logoutBtn" style="display:none">Logout</button>
+    </div>
+  </header>
+
+  <main class="container">
+
+    <!-- Landing / Role selection -->
+    <section id="landing" class="section active">
+      <div class="grid" style="grid-template-columns:1.1fr .9fr;align-items:start">
+        <div class="panel">
+          <h2>Welcome 👋</h2>
+          <p class="muted">This is a Shopping Site. Just Place Your order and Tack Your Things Easily. <br><span class="kbd">My ShopX</span>. There is an admin (seller) area to manage products and a customer area to browse & order.</p>
+          <p class="muted">Use the buttons above to navigate between the shop and admin areas.</p>
+          <div class="notice" style="margin-top:10px">
+            <b>Default credentials</b>
+            <div class="grid" style="grid-template-columns:1fr 1fr;margin-top:8px">
+              <div><div class="muted">Admin</div><div class="kbd">admin@shop.com</div> / <div class="kbd">admin123</div></div>
+            </div>
+          </div>
+          <div class="row" style="margin-top:14px">
+            <button id="startCustomer">Enter Shop</button>
+            <button class="secondary" id="startAdmin">Go to Admin</button>
+          </div>
+        </div>
+        <div class="panel">
+          <h3>Quick Tips</h3>
+          <ul>
+            <p>This Is a Shopping Site.<br><b>My ShopX</b><hr></p>
+            <li>If You Are <b>Admin</b>, Use the Admin Panel to Manage Products.</li>
+            <li>If You Are <b>Customer</b>, Use the Shop to Browse and Purchase Products.</li>
+          </ul>
+        </div>
+      </div>
+    </section>
+
+    <!-- Login -->
+    <section id="login" class="section">
+      <div class="grid" style="grid-template-columns:1fr 1fr">
+        <div class="panel">
+          <h3>Admin / Seller Login</h3>
+          <div class="grid">
+            <label>Email<input id="adminEmail" value="admin@shop.com" /></label>
+            <label>Password<input id="adminPass" type="password" value="admin123" /></label>
+            <button id="adminLoginBtn">Login as Admin</button>
+          </div>
+        </div>
+        <div class="panel">
+  <h3>Customer Login</h3>
+  <div class="grid">
+    <label>Email<input id="custEmail" placeholder="Enter email" /></label>
+    <label>Password<input id="custPass" type="password" placeholder="Enter password" /></label>
+    <button id="custLoginBtn">Login</button>
+  </div>
+  <hr style="margin:14px 0">
+  <h4>New Customer? Register</h4>
+  <div class="grid">
+    <label>Email<input id="regEmail" placeholder="Enter email" /></label>
+    <label>Phone<input id="regPhone" placeholder="Enter phone" /></label>
+    <label>Password<input id="regPass" type="password" placeholder="Enter password" /></label>
+    <button id="custRegisterBtn">Register</button>
+  </div>
+</div>
+    </section>
+
+    <!-- Shop / Customer Dashboard -->
+    <section id="shop" class="section">
+      <div class="row between center" style="margin-bottom:12px">
+        <h2>Products</h2>
+        <div class="row center" style="gap:8px">
+          <select id="categoryFilter"></select>
+          <input id="searchInput" placeholder="Search products..." style="width:240px" />
+          <button id="clearFilters" class="secondary">Clear</button>
+          <button id="viewOrdersBtn" class="ghost">My Orders</button>
+        </div>
+      </div>
+      <div id="productGrid" class="grid cards"></div>
+    </section>
+
+    <!-- Orders (customer) -->
+    <section id="orders" class="section">
+      <div class="row between center" style="margin-bottom:12px">
+        <h2>My Orders</h2>
+        <button class="secondary" onclick="Router.go('#shop')">Back to Shop</button>
+      </div>
+      <table class="table" id="ordersTable">
+        <thead>
+  <tr>
+    <th>Order #</th>
+    <th>Product</th>
+    <th>Qty</th>
+    <th>Total</th>
+    <th>Date</th>
+    <th>Status</th>
+  </tr>
+</thead>
+        <tbody></tbody>
+      </table>
+    </section>
+
+    <!-- Admin -->
+    <section id="admin" class="section">
+      <div class="row between center" style="margin-bottom:12px">
+        <h2>Admin — Products</h2>
+        <div class="row center" style="gap:8px">
+          <select id="adminCategoryFilter"></select>
+          <input id="adminSearch" placeholder="Search..." style="width:220px" />
+          <button class="secondary" id="adminClearFilters">Clear</button>
+        </div>
+      </div>
+
+      <div class="panel" style="margin-bottom:18px">
+        <h3 id="formTitle">Add Product</h3>
+        <div class="grid" style="grid-template-columns:repeat(6,1fr)">
+          <div>
+            <label>Product ID
+              <input id="pId" placeholder="auto" readonly />
+            </label>
+          </div>
+          <div>
+            <label>Name
+              <input id="pName" />
+            </label>
+          </div>
+          <div>
+            <label>Price (₹)
+              <input id="pPrice" type="number" min="0" step="0.01" />
+            </label>
+          </div>
+          <div>
+            <label>Discount (%)
+              <input id="pDiscount" type="number" min="0" max="95" step="1" placeholder="optional" />
+            </label>
+          </div>
+          <div>
+            <label>Total (auto)
+              <input id="pTotal" readonly />
+            </label>
+          </div>
+          <div>
+            <label>Category
+              <select id="pCategory"></select>
+            </label>
+          </div>
+        </div>
+        <div class="grid" style="grid-template-columns:2fr 1fr; margin-top:12px">
+          <label>Image URL
+            <input id="pImage" placeholder="https://..." />
+          </label>
+          <div class="row" style="gap:8px;align-items:end;justify-content:flex-end">
+            <button id="resetForm" class="secondary">Reset</button>
+            <button id="saveProduct">Save Product</button>
+          </div>
+        </div>
+      </div>
+
+      <table class="table" id="adminTable">
+        <thead>
+          <tr>
+            <th>ID</th><th>Image</th><th>Name</th><th>Category</th><th>Price</th><th>Disc%</th><th>Total</th><th>Actions</th>
+          </tr>
+        </thead>
+        <tbody></tbody>
+      </table>
+    </section>
+
+    <div class="footer">Made with ❤️ Heart. - My ShopX</div>
+
+  </main>
+
+<script>
+// ===== Utilities =====
+const $ = sel => document.querySelector(sel);
+const $$ = sel => Array.from(document.querySelectorAll(sel));
+const uid = () => 'P' + Math.random().toString(36).slice(2,8).toUpperCase();
+const today = () => new Date().toISOString();
+
+// ===== Storage Layer =====
+const DB = {
+  get(key, fallback){ try { return JSON.parse(localStorage.getItem(key)) ?? fallback } catch { return fallback } },
+  set(key, value){ localStorage.setItem(key, JSON.stringify(value)); },
+  // bootstrap initial data once
+  init(){
+    if(!localStorage.getItem('users')){
+      DB.set('users', [
+        {id:'U1', email:'admin@shop.com', pass:'admin123', role:'admin'}
+      ]);
+    }
+    if(!localStorage.getItem('categories')){
+      DB.set('categories', ['All','Electronics','Fashion','Home','Books','Grocery']);
+    }
+    if(!localStorage.getItem('products')){
+      DB.set('products', [
+        {id:uid(), name:'Wireless Headphones', price:2999, discount:10, total:2699.1, image:'https://images.unsplash.com/photo-1518441902117-f26c36d9d3ff?q=80&w=1200&auto=format&fit=crop', category:'Electronics'},
+        {id:uid(), name:'Cotton T-Shirt', price:699, discount:0, total:699, image:'https://images.unsplash.com/photo-1520975693416-35a3c1a52ad2?q=80&w=1200&auto=format&fit=crop', category:'Fashion'},
+        {id:uid(), name:'Ceramic Mug', price:349, discount:15, total:296.65, image:'https://images.unsplash.com/photo-1524592094714-0f0654e20314?q=80&w=1200&auto=format&fit=crop', category:'Home'}
+      ]);
+    }
+    if(!localStorage.getItem('orders')) DB.set('orders', []);
+  }
+};
+DB.init();
+
+// ===== Session & Routing =====
+const Session = {
+  get user(){ return DB.get('sessionUser', null) },
+  set user(u){ DB.set('sessionUser', u) }
+}
+
+const Router = {
+  go(hash){ location.hash = hash; render(); },
+  start(){ if(!location.hash) location.hash = '#landing'; render(); }
+}
+
+// ===== Auth =====
+function login(email, pass, role){
+  const users = DB.get('users', []);
+  const u = users.find(x => x.email===email && x.pass===pass && x.role===role);
+  if(u){ 
+    Session.user = {id:u.id, email:u.email, role:u.role};
+    if(role==='admin') Router.go('#admin'); 
+    else Router.go('#shop');
+    flash(`Logged in as ${role}.`);
+  } else { 
+    alert('Invalid credentials'); 
+  }
+}
+function logout(){ Session.user = null; Router.go('#landing'); flash('Logged out.'); }
+
+function registerCustomer(email, phone, pass){
+  if(!email || !phone || !pass){ 
+    alert('All fields required'); 
+    return; 
+  }
+  const users = DB.get('users', []);
+  if(users.some(u=>u.email===email)){ 
+    alert('Email already registered'); 
+    return; 
+  }
+
+  const newUser = {
+    id: 'U'+Math.random().toString(36).slice(2,8).toUpperCase(),
+    email, phone, pass, role:'customer'
+  };
+
+  users.push(newUser);
+  DB.set('users', users);
+
+  // ✅ Auto-login after register
+  Session.user = {id:newUser.id, email:newUser.email, role:newUser.role};
+  Router.go('#shop');
+  flash(`Welcome ${newUser.email}, account created & logged in!`);
+}
+
+// Customer register
+document.getElementById('custRegisterBtn').onclick = () => {
+  registerCustomer(
+    document.getElementById('regEmail').value,
+    document.getElementById('regPhone').value,
+    document.getElementById('regPass').value
+  );
+};
+
+// ===== UI Helpers =====
+function show(id){ $$('.section').forEach(s=>s.classList.remove('active')); $(id).classList.add('active'); }
+function flash(msg){
+  const el = document.createElement('div');
+  el.textContent = msg; el.style.position='fixed'; el.style.bottom='18px'; el.style.right='18px';
+  el.style.background='#111b3c'; el.style.border='1px solid #26336b'; el.style.padding='10px 14px'; el.style.borderRadius='12px';
+  document.body.appendChild(el); setTimeout(()=>el.remove(), 2200);
+}
+
+function setHeader(){
+  const user = Session.user; const role = user? user.role : 'Guest';
+  $('#roleTag').textContent = role.charAt(0).toUpperCase()+role.slice(1);
+  $('#loginBtn').style.display = user? 'none':'inline-block';
+  $('#logoutBtn').style.display = user? 'inline-block':'none';
+}
+
+// ===== Categories =====
+function getCategories(){ return DB.get('categories', ['All']); }
+function fillCategorySelects(){
+  const cats = getCategories();
+  const filter = $('#categoryFilter'); const afilter = $('#adminCategoryFilter'); const pcat = $('#pCategory');
+  const opts = cats.map(c=>`<option value="${c}">${c}</option>`).join('');
+  filter.innerHTML = opts; afilter.innerHTML = opts; pcat.innerHTML = cats.filter(c=>c!=='All').map(c=>`<option>${c}</option>`).join('');
+  filter.value = 'All'; afilter.value = 'All';
+}
+
+// ===== Products =====
+function computeTotal(price, discount){
+  const p = Number(price)||0; const d = Number(discount)||0; return +(p - (p*d/100)).toFixed(2);
+}
+function upsertProduct(prod){
+  const arr = DB.get('products', []);
+  const idx = arr.findIndex(x=>x.id===prod.id);
+  if(idx>=0) arr[idx]=prod; else arr.unshift(prod);
+  DB.set('products', arr);
+}
+function deleteProduct(id){
+  const arr = DB.get('products', []);
+  DB.set('products', arr.filter(x=>x.id!==id));
+}
+
+function renderProducts(){
+  const grid = $('#productGrid');
+  const q = ($('#searchInput').value||'').toLowerCase();
+  const cat = $('#categoryFilter').value;
+  const items = DB.get('products', []).filter(p=>
+    (cat==='All'||p.category===cat) && (p.name.toLowerCase().includes(q))
+  );
+  grid.innerHTML = items.map(p=>`
+    <div class='card'>
+      <img src='${p.image||''}' alt='${p.name}' onerror="this.src='https://picsum.photos/seed/${p.id}/600/400'" />
+      <div class='p'>
+        <div class='row between center'>
+          <div style='font-weight:700'>${p.name}</div>
+          <span class='pill'>${p.category}</span>
+        </div>
+        <div class='row between center' style='margin-top:8px'>
+          <div>
+            ${p.discount?`<div class='muted' style='text-decoration:line-through'>₹${p.price}</div>`:''}
+            <div style='font-size:18px;font-weight:800'>₹${p.total}</div>
+            ${p.discount?`<div class='pill' style='display:inline-block;margin-top:6px'>-${p.discount}%</div>`:''}
+          </div>
+          <button onclick="placeOrder('${p.id}')">Order</button>
+        </div>
+      </div>
+    </div>`).join('');
+}
+
+function renderAdminTable(){
+  const tbody = $('#adminTable tbody');
+  const q = ($('#adminSearch').value||'').toLowerCase();
+  const cat = $('#adminCategoryFilter').value;
+  const items = DB.get('products', []).filter(p=>
+    (cat==='All'||p.category===cat) && (p.name.toLowerCase().includes(q))
+  );
+  tbody.innerHTML = items.map(p=>`
+    <tr>
+      <td>${p.id}</td>
+      <td><img src='${p.image||''}' width='50' height='38' style='object-fit:cover;border-radius:6px' onerror="this.src='https://picsum.photos/seed/${p.id}/100/80'"/></td>
+      <td>${p.name}</td>
+      <td>${p.category}</td>
+      <td>₹${p.price}</td>
+      <td>${p.discount||0}%</td>
+      <td>₹${p.total}</td>
+      <td>
+        <button class='ghost' onclick="editProduct('${p.id}')">Edit</button>
+        <button class='danger' onclick="removeProduct('${p.id}')">Delete</button>
+      </td>
+    </tr>`).join('');
+}
+
+// ===== Orders =====
+function placeOrder(productId){
+  const user = Session.user;
+  if(!user || user.role!=='customer'){ alert('Please login as a customer to place orders.'); Router.go('#login'); return; }
+  const p = DB.get('products', []).find(x=>x.id===productId);
+  if(!p){ alert('Product not found'); return; }
+  const qtyStr = prompt('Quantity', '1');
+  const qty = Math.max(1, parseInt(qtyStr||'1',10) || 1);
+  const orders = DB.get('orders', []);
+  const order = {
+    id: 'O' + Math.random().toString(36).slice(2,8).toUpperCase(),
+    userId: user.id,
+    productId: p.id,
+    productName: p.name,
+    qty,
+    total: +(p.total * qty).toFixed(2),
+    date: new Date().toISOString(),
+    status: 'Placed'
+  };
+  orders.unshift(order);
+  DB.set('orders', orders);
+  flash('Order placed.');
+  Router.go('#orders');
+  renderOrders();
+}
+
+function cancelOrder(orderId){
+  const orders = DB.get('orders', []);
+  const idx = orders.findIndex(o=>o.id===orderId);
+  if(idx >= 0){
+    if(orders[idx].status !== 'Placed'){ alert('Only "Placed" orders can be cancelled.'); return; }
+    if(confirm('Cancel this order?')){
+      orders[idx].status = 'Cancelled';
+      DB.set('orders', orders);
+      renderOrders();
+      flash('Order cancelled.');
+    }
+  }
+}
+
+function renderOrders(){
+  const tbody = $('#ordersTable tbody');
+  const user = Session.user;
+  if(!user) return;
+  const orders = DB.get('orders', []).filter(o=>o.userId===user.id);
+  tbody.innerHTML = orders.map(o=>{
+    const canCancel = o.status === 'Placed';
+    return `
+      <tr>
+        <td>${o.id}</td>
+        <td>${o.productName}</td>
+        <td>${o.qty}</td>
+        <td>₹${o.total}</td>
+        <td>${new Date(o.date).toLocaleString()}</td>
+        <td>
+          <span class='pill'>${o.status}</span>
+          ${canCancel ? `<button class="danger" style="margin-left:8px" onclick="cancelOrder('${o.id}')">Cancel</button>` : ''}
+        </td>
+      </tr>
+    `;
+  }).join('');
+}
+
+// ===== Admin Form =====
+function resetForm(){
+  $('#formTitle').textContent = 'Add Product';
+  $('#pId').value=''; $('#pName').value=''; $('#pPrice').value=''; $('#pDiscount').value='';
+  $('#pTotal').value=''; $('#pImage').value=''; $('#pCategory').value=$('#pCategory option')?.value;
+}
+
+function editProduct(id){
+  const p = DB.get('products', []).find(x=>x.id===id); if(!p) return;
+  $('#formTitle').textContent = 'Edit Product';
+  $('#pId').value=p.id; $('#pName').value=p.name; $('#pPrice').value=p.price; $('#pDiscount').value=p.discount||0;
+  $('#pTotal').value=p.total; $('#pImage').value=p.image; $('#pCategory').value=p.category;
+  window.scrollTo({top:0,behavior:'smooth'});
+}
+
+function removeProduct(id){
+  if(confirm('Delete this product?')){ deleteProduct(id); renderAdminTable(); renderProducts(); flash('Product deleted'); }
+}
+
+function handleAutoTotal(){
+  const price = $('#pPrice').value; const disc = $('#pDiscount').value; $('#pTotal').value = computeTotal(price, disc);
+}
+
+function saveProduct(){
+  const id = $('#pId').value || uid();
+  const name = $('#pName').value.trim();
+  const price = Number($('#pPrice').value||0);
+  const discount = Number($('#pDiscount').value||0);
+  const total = computeTotal(price, discount);
+  const image = $('#pImage').value.trim();
+  const category = $('#pCategory').value;
+  if(!name){ alert('Name required'); return; }
+  if(price<=0){ alert('Price must be positive'); return; }
+  const prod = {id, name, price, discount, total, image, category};
+  upsertProduct(prod);
+  renderAdminTable(); renderProducts();
+  resetForm(); flash('Saved.');
+}
+
+// ===== Event Wiring =====
+$('#goShopBtn').onclick = ()=>Router.go('#shop');
+$('#goAdminBtn').onclick = ()=>Router.go('#admin');
+$('#loginBtn').onclick = ()=>Router.go('#login');
+$('#logoutBtn').onclick = logout;
+$('#startCustomer').onclick = ()=>Router.go('#shop');
+$('#startAdmin').onclick = ()=>Router.go('#admin');
+$('#adminLoginBtn').onclick = ()=>login($('#adminEmail').value,$('#adminPass').value,'admin');
+$('#custLoginBtn').onclick = ()=>login($('#custEmail').value,$('#custPass').value,'customer');
+
+$('#categoryFilter').onchange = renderProducts;
+$('#adminCategoryFilter').onchange = renderAdminTable;
+$('#searchInput').oninput = renderProducts;
+$('#adminSearch').oninput = renderAdminTable;
+$('#clearFilters').onclick = ()=>{ $('#categoryFilter').value='All'; $('#searchInput').value=''; renderProducts(); };
+$('#adminClearFilters').onclick = ()=>{ $('#adminCategoryFilter').value='All'; $('#adminSearch').value=''; renderAdminTable(); };
+$('#viewOrdersBtn').onclick = ()=>{ Router.go('#orders'); renderOrders(); };
+
+$('#pPrice').oninput = handleAutoTotal;
+$('#pDiscount').oninput = handleAutoTotal;
+$('#resetForm').onclick = resetForm;
+$('#saveProduct').onclick = saveProduct;
+
+// ===== Render / Guarded Routes =====
+function render(){
+  setHeader(); fillCategorySelects();
+  const hash = location.hash||'#landing';
+  const user = Session.user;
+  if(hash==='#admin'){
+    if(!user || user.role!=='admin'){ alert('Admin only. Please login as admin.'); show('#login'); return; }
+    show('#admin'); renderAdminTable();
+  } else if(hash==='#shop'){
+    show('#shop'); renderProducts();
+  } else if(hash==='#orders'){
+    if(!user || user.role!=='customer'){ alert('Customer only.'); show('#login'); return; }
+    show('#orders'); renderOrders();
+  } else if(hash==='#login'){
+    show('#login');
+  } else {
+    show('#landing');
+  }
+}
+
+window.addEventListener('hashchange', render);
+Router.start();
+</script>
+</body>
+</html>
